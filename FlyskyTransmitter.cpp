@@ -15,9 +15,9 @@
  */
 #include <Arduino.h>
 #if defined (__SAM3X8E__) 
-	//#include <DueTimer.h>
+	#include <DueTimer.h>
 #else
-	#include <TimerThree.h>
+	//#include <TimerThree.h>
 #endif
 
 #include "a7105.h"
