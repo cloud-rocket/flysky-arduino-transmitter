@@ -1,3 +1,7 @@
+// BOF preprocessor bug prevent - insert me on top of your arduino-code
+#if 1
+__asm volatile ("nop");
+#endif
 
 /*
  This project is free software: you can redistribute it and/or modify
@@ -15,9 +19,11 @@
  */
 #include <Arduino.h>
 #if defined (__SAM3X8E__) 
-	#include <DueTimer.h>
-#else
+	//#include <DueTimer.h>
+#elif defined (__AVR_ATmega2560__ )
 	//#include <TimerThree.h>
+#else
+	#include <TimerOne.h>
 #endif
 
 #include "a7105.h"
@@ -171,11 +177,12 @@ static int flysky_init()
             A7105_WriteReg(i, A7105_regs[i]);
 
     A7105_Strobe(A7105_STANDBY);
+	
+//    vco_read = A7105_ReadReg(0x00);
+//    printf("%d  vco_read=%d\n", __LINE__, vco_read);
 
     //IF Filter Bank Calibration
     A7105_WriteReg(0x02, 1);
-    vco_read = A7105_ReadReg(0x02);
-	printf("%d  vco_read=%d\n", __LINE__, vco_read);
     u32 ms = millis();
     while(millis()  - ms < 500) {
         if(! A7105_ReadReg(0x02))
@@ -380,6 +387,8 @@ static void initialize(u8 bind) {
     //CLOCK_StartTimer(2400, flysky_cb);
 #if defined (__arm__) && defined (__SAM3X8E__) 
 	Timer3.attachInterrupt(flysky_cb).start(1250); //2400
+#elif defined (__AVR_ATmega328P__)
+	Timer1.attachInterrupt(flysky_cb, 1250);
 #else
 	Timer3.attachInterrupt(flysky_cb, 1250);
 #endif
@@ -395,7 +404,12 @@ const void *FLYSKY_Cmds(enum ProtoCmds cmd)
         case PROTOCMD_DEINIT:
         case PROTOCMD_RESET:
             //CLOCK_StopTimer();
+#if defined (__AVR_ATmega328P__)
+			Timer1.detachInterrupt();
+#else
 			Timer3.detachInterrupt();
+#endif
+			
             return (void *)(A7105_Reset() ? 1L : -1L);
         case PROTOCMD_CHECK_AUTOBIND: return Model.fixed_id ? 0 : (void *)1L;
         case PROTOCMD_BIND:  initialize(1); return 0;

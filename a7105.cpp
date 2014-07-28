@@ -3,7 +3,7 @@
 #include "config.h"
 #include "a7105.h"
 
-#define CS_PIN 53 //10
+#define CS_PIN 8//53 //10
 
 #define CS_HI() digitalWrite(CS_PIN, HIGH);
 #define CS_LO() digitalWrite(CS_PIN, LOW);
@@ -62,7 +62,7 @@ void A7105_Setup() {
 //  SPI.setClockDivider(10);
   SPI.setBitOrder(MSBFIRST);
   // set gpio1 to SDO (MISO) by writing to reg GIO1S
-//  A7105_WriteReg(0x0b,0x06); // 0b0110
+  A7105_WriteReg(0x0b,0x06); // 0b0110
 }
 
   

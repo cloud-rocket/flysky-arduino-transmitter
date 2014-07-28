@@ -1,10 +1,18 @@
-#include <spi.h>
-#if defined (__SAM3X8E__)
-#include <DueTimer.h>
-#else
-//#include <TimerThree.h>
+// BOF preprocessor bug prevent - insert me on top of your arduino-code
+#if 1
+__asm volatile ("nop");
 #endif
 
+#include <spi.h>
+#if defined(__SAM3X8E__)
+//#include <DueTimer.h>
+#elif defined(__AVR_ATmega2560__ )
+//#include <TimerThree.h>
+#else
+#include <TimerOne.h>
+#endif
+
+#include <SPI.h>
 #include "a7105.h"
 #include "printf.h"
 #include "FlyskyTransmitter.h"
@@ -26,10 +34,12 @@ void setup() {
   
   A7105_Setup(); //A7105_Reset();
   
-  printf("Initializing Timer3...\n");
+  printf("Initializing Timer...\n");
   
-#if !defined (__arm__) && defined (__SAM3X8E__)  
+#if defined (__AVR_ATmega2560__ )
   Timer3.initialize();
+#else if defined (__AVR_ATmega328P__)
+	Timer1.initialize();    
 #endif
   
   // Set all channels to zero
@@ -57,10 +67,10 @@ void loop() {
 	
 	while (1) {
 		
-		printf("Read value (<channel value>): ");
+		printf("Read value (<channel(0-7)> <value(0-9999)>): ");
 		
 		while (!Serial.available()) {
-			delay(10);
+			delay(100);
 		}
 		
 		chan = Serial.parseInt();
